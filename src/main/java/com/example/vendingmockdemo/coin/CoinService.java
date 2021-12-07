@@ -1,6 +1,7 @@
 package com.example.vendingmockdemo.coin;
 
 import com.example.vendingmockdemo.info.InfoPanelService;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,10 @@ import java.util.List;
 public class CoinService {
 
     private final InfoPanelService infoPanelService;
+
+    @Getter
     private int currentCents;
+
     private List<Coin> coins;
 
     {
@@ -28,7 +32,7 @@ public class CoinService {
         coins.add(coin);
         currentCents += coin.getCents();
         infoPanelService.showTotalAmount(currentCents);
-        return currentCents;
+        return coin.getCents();
     }
 
     public List<Coin> returnCoins() {
