@@ -15,7 +15,7 @@ public class CoinService {
     private final InfoPanelService infoPanelService;
 
     @Getter
-    private int currentCents;
+    private int total;
 
     private List<Coin> coins;
 
@@ -24,14 +24,14 @@ public class CoinService {
     }
 
     private void init() {
-        currentCents = 0;
+        total = 0;
         coins = new ArrayList<>();
     }
 
     public int insertCoin(Coin coin) {
         coins.add(coin);
-        currentCents += coin.getCents();
-        infoPanelService.showTotalAmount(currentCents);
+        total += coin.getCents();
+        infoPanelService.showTotalAmount(total);
         return coin.getCents();
     }
 
@@ -39,8 +39,21 @@ public class CoinService {
         List<Coin> coinsToReturn = new ArrayList<>(coins);
         infoPanelService.showCoinsReturn(coinsToReturn);
         init();
-        infoPanelService.showTotalAmount(currentCents);
+        infoPanelService.showTotalAmount(total);
         return coinsToReturn;
+    }
+
+    public void pay(int cents) {
+        checkTotalSufficient(cents);
+        total -= cents;
+        coins = new ArrayList<>(); // can't relate coins after paying
+        infoPanelService.showTotalAmount(total);
+    }
+
+    public void checkTotalSufficient(int cents) {
+        if (cents > total) {
+            throw new UnsupportedOperationException(String.format("Please insert %s cents more", cents - total));
+        }
     }
 
 }
