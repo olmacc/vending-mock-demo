@@ -1,11 +1,12 @@
 package com.example.vendingmockdemo.coin;
 
 import com.example.vendingmockdemo.info.InfoPanelService;
+import com.example.vendingmockdemo.product.Product;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -14,7 +15,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,35 +28,44 @@ public class CoinServiceTest {
     private InfoPanelService infoPanelService;
 
     @Test
-    public void addingCoinsIncreasesTotalTest() {
+    public void when_insertCoins_then_calculateTotal() {
         underTest.insertCoin(Coin.TWO_EUR);
         underTest.insertCoin(Coin.TWO_CENTS);
         assertEquals(202, underTest.getTotal());
+    }
+
+    @Test
+    public void when_insertCoins_then_showTotal() {
+        underTest.insertCoin(Coin.TWENTY_CENTS);
+        underTest.insertCoin(Coin.TEN_CENTS);
+        underTest.insertCoin(Coin.FIVE_CENTS);
+        underTest.insertCoin(Coin.FIVE_CENTS);
+        underTest.insertCoin(Coin.TWO_CENTS);
         InOrder inOrder = Mockito.inOrder(infoPanelService);
-        inOrder.verify(infoPanelService).showTotalAmount(200);
-        inOrder.verify(infoPanelService).showTotalAmount(202);
+        inOrder.verify(infoPanelService).showTotalAmount(20);
+        inOrder.verify(infoPanelService).showTotalAmount(30);
+        inOrder.verify(infoPanelService).showTotalAmount(35);
+        inOrder.verify(infoPanelService).showTotalAmount(40);
+        inOrder.verify(infoPanelService).showTotalAmount(42);
     }
 
     @ParameterizedTest
-    @MethodSource("provideCalculationArguments")
-    public void calculateCoinsTest(int total, int expected) {
-        assertEquals(expected, underTest.calculateReturnCoins(new ArrayList<>(List.of(Coin.values())), total).size());
+    @CsvFileSource(resources = "/coin-return-calculation.csv")
+    public void when_calculateReturnCoins_then_correctCoinCount(int total, int expected) {
+        assertEquals(
+                expected,
+                underTest
+                        .calculateReturnCoins(new ArrayList<>(List.of(Coin.values())), total)
+                        .size());
     }
 
-    private static Stream<Arguments> provideCalculationArguments() {
-        return Stream.of(
-                Arguments.of(0, 0),
-                Arguments.of(1, 1),
-                Arguments.of(2, 1),
-                Arguments.of(3, 2),
-                Arguments.of(4, 2),
-                Arguments.of(5, 1),
-                Arguments.of(6, 2),
-                Arguments.of(7, 2),
-                Arguments.of(8, 3),
-                Arguments.of(9, 3),
-                Arguments.of(10, 1),
-                Arguments.of(388, 8)
-        );
+    @ParameterizedTest
+    @EnumSource(Product.class)
+    public void when_payProduct_then_subtractFromTotal(Product product) {
+        underTest.insertCoin(Coin.TWO_EUR);
+        int cost = product.getCents();
+        underTest.pay(cost);
+        assertEquals(200 - cost, underTest.getTotal());
     }
+
 }
