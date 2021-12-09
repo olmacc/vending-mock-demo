@@ -7,10 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.mockito.InOrder;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
@@ -24,18 +21,18 @@ public class CoinServiceTest {
     @InjectMocks
     private CoinService underTest;
 
-    @Mock
+    @Spy
     private InfoPanelService infoPanelService;
 
     @Test
-    public void when_insertCoins_then_calculateTotal() {
+    public void given_zeroTotal_when_insertCoins_then_calculateTotal() {
         underTest.insertCoin(Coin.TWO_EUR);
         underTest.insertCoin(Coin.TWO_CENTS);
         assertEquals(202, underTest.getTotal());
     }
 
     @Test
-    public void when_insertCoins_then_showTotal() {
+    public void given_zeroTotal_when_insertCoins_then_showTotal() {
         underTest.insertCoin(Coin.TWENTY_CENTS);
         underTest.insertCoin(Coin.TEN_CENTS);
         underTest.insertCoin(Coin.FIVE_CENTS);
